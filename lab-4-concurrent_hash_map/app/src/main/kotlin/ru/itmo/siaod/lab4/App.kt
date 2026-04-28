@@ -18,5 +18,19 @@
 package ru.itmo.siaod.lab4
 
 fun main() {
-   
+    val map = ConcurrentHashMap()
+
+    map.put(ConcurrentHashMap.NodeKV("cat", "22"))
+    map.put(ConcurrentHashMap.NodeKV("dog", "33"))
+    map.put(ConcurrentHashMap.NodeKV("fox", "55"))
+    map.put(ConcurrentHashMap.NodeKV("moose", "67"))
+    map.put(ConcurrentHashMap.NodeKV("bear", "81"))
+
+    println("size after insert = ${map.size()}")
+
+    map.put(ConcurrentHashMap.NodeKV("fox", "91"))
+    map.put(ConcurrentHashMap.NodeKV("cat", "100"))
+
+    println("size after updates = ${map.size()}")
+    println(map.get("fox"))
 }
