@@ -18,19 +18,45 @@
 package ru.itmo.siaod.lab4
 
 fun main() {
+    val emptyMap = ConcurrentHashMap()
+
+    println("=== Empty map iterator ===")
+    val emptyIterator = emptyMap.iterator()
+    println("hasNext = ${emptyIterator.hasNext()}") // false
+
     val map = ConcurrentHashMap()
 
     map.put(ConcurrentHashMap.NodeKV("cat", "22"))
     map.put(ConcurrentHashMap.NodeKV("dog", "33"))
     map.put(ConcurrentHashMap.NodeKV("fox", "55"))
-    map.put(ConcurrentHashMap.NodeKV("moose", "67"))
-    map.put(ConcurrentHashMap.NodeKV("bear", "81"))
 
-    println("size after insert = ${map.size()}")
-
+    // update existing key: iterator должен показать fox = 91, а не fox = 55
     map.put(ConcurrentHashMap.NodeKV("fox", "91"))
-    map.put(ConcurrentHashMap.NodeKV("cat", "100"))
 
-    println("size after updates = ${map.size()}")
-    println(map.get("fox"))
+    // collision case: "Aa" и "BB" имеют одинаковый hashCode в JVM
+    map.put(ConcurrentHashMap.NodeKV("Aa", "first"))
+    map.put(ConcurrentHashMap.NodeKV("BB", "second"))
+
+    println()
+    println("=== Filled map iterator ===")
+    println("size = ${map.size()}") // 5
+
+    val iterator = map.iterator()
+    while (iterator.hasNext()) {
+        val entry = iterator.next()
+        println("${entry.key} = ${entry.value}")
+    }
+
+    println()
+    println("=== Check updated value ===")
+    println("fox = ${map.get("fox")}") // 91
+
+    println()
+    println("=== After clear iterator ===")
+    map.clear()
+    println("size = ${map.size()}") // 0
+
+    val afterClearIterator = map.iterator()
+    println("hasNext = ${afterClearIterator.hasNext()}") // false
 }
+

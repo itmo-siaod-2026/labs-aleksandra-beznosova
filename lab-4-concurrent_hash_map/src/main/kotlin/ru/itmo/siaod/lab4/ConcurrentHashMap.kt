@@ -3,21 +3,19 @@ package ru.itmo.siaod.lab4
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReferenceArray
 
-class ConcurrentHashMap() {
+class ConcurrentHashMap @JvmOverloads constructor(
+    private val capacity: Int = 16
+) {
     data class NodeKV(val key: String, var value: String, var link: NodeKV? = null)
 
-    val capacity = 16
     val buckets = AtomicReferenceArray<NodeKV?>(capacity)
     val tableSizeCounter = AtomicInteger(0)
     fun size(): Int {
         return tableSizeCounter.get()
     }
-    private fun hash(key: String): Int {
-        return key.hashCode() % capacity
-    }
 
-    private fun findLast(bucket: NodeKV): NodeKV {
-        return bucket
+    private fun hash(key: String): Int {
+        return (key.hashCode() and Int.MAX_VALUE) % capacity
     }
 
     fun put(pair: NodeKV) {
@@ -84,7 +82,7 @@ class ConcurrentHashMap() {
         return null
     }
 
-    fun clear() {
+    fun clear() {//не является строго атомарным относительно параллельных put/merge
         for (i in 0 until capacity) {
 
             while (true) {
@@ -153,5 +151,26 @@ class ConcurrentHashMap() {
                 }
             }
         }
+    }
+
+    data class Entry(val key: String, val value: String)
+
+    fun iterator(): Iterator<Entry> {
+        var entries: MutableList<Entry> = mutableListOf<Entry>()
+
+        for (i in 0 until capacity) {
+            var current = buckets[i]
+            while (true) {
+                if (current == null) {
+                    break
+                }
+                entries.add(Entry(current.key, current.value))
+                if (current.link == null) {
+                    break
+                }
+                current = current.link
+            }
+        }
+        return entries.iterator()
     }
 }
